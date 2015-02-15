@@ -1,0 +1,2 @@
+/usr/bin/ar cr ../../lib/libcamerautils.a  CMakeFiles/camerautils.dir/camerautils.cpp.o
+/usr/bin/ranlib ../../lib/libcamerautils.a

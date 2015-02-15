@@ -45,6 +45,9 @@
 #include <deque>
 #include <list>
 
+
+ using namespace std;
+
 //CameraInfo kinectPoseFromSophus(Sophus::SE3 pos){
 //	CameraInfo result;
 //	cv::Mat intrinsic = cv::Mat::eye(3,3,cv::DataType<double>::type);
@@ -231,10 +234,11 @@ int main(int argc, char *argv[])
   imageDepthScale = imageDepthScaleArg.getValue();
   intrinsics = intrinsicsArg.getValue();
 
-  float fx = 525.0f;
-  float fy = 525.0f;
+  float fx = 584.6f;
+  float fy = 580.9f;
   float cx = 319.5f;
-  float cy = 239.5f;
+  float cy = 239.0f;
+  // 584.6, 580.9, 319.5, 239
 
   if (intrinsics != "") {
   	fprintf(stderr,"\nReading intrinsic camera parameters from %s",intrinsics.c_str());
@@ -300,7 +304,7 @@ int main(int argc, char *argv[])
 		unsigned int assfilestartindex = 0;
 		for(unsigned int f=0;f<associationfilenames.size();f++){
 			std::string prefix = prefices[f];
-			std::fstream associationfile; float junkstamp;
+			std::fstream associationfile;
 			std::string depthname; std::string rgbname;
 			float q1, q2, q3, q4, translation1, translation2, translation3;
 			associationfile.open(associationfilenames[f].c_str(),std::ios::in);
@@ -312,17 +316,16 @@ int main(int argc, char *argv[])
 					std::string temp("");
 					getline(associationfile,temp);
 					std::stringstream stream(temp);
-					stream >> junkstamp;
 					stream >> translation1; stream >> translation2; stream >> translation3;
 					stream >> q1; stream >> q2; stream >> q3; stream >> q4;
-					stream >> junkstamp;
 					stream >> depthname;
+					cout << depthname << endl;
 					if(temp!=""){
 //						posesSophus.push_back(Sophus::SE3(Eigen::Quaterniond(q4,q1,q2,q3),Eigen::Vector3d(translation1,translation2,translation3)));
 						poses_from_assfile.push_back(std::pair<Eigen::Matrix3d,Eigen::Vector3d>(Eigen::Quaterniond(q4,q1,q2,q3).toRotationMatrix(),Eigen::Vector3d(translation1,translation2,translation3)));
 						depthNamesLast.push_back(depthname);
 						if(useColor){
-							stream >> junkstamp; stream >> rgbname; rgbNamesLast.push_back(rgbname);
+							stream >> rgbname; rgbNamesLast.push_back(rgbname);
 						}
 					}
 				}
@@ -495,3 +498,4 @@ int main(int argc, char *argv[])
 	fprintf(stderr,"%s",fgets(input,256,stdin));
 	return 0;
 }
+

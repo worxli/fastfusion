@@ -46,7 +46,26 @@ onlinefusionviewer_main.cpp
 onlinefusionviewer.cpp
 ${onlinefusion_HEADERS_MOC}
 )
+
 target_link_libraries(onlinefusion
+geometryfusion_mipmap_cpu geometryfusion_aos
+camerautils
+auxiliary
+${OpenCV_LIBS}
+${QGLVIEWER}
+QtCore QtGui QtOpenGL
+GL GLU glut GLEW
+boost_thread
+boost_system
+)
+
+add_executable(onlinefusionBA
+onlinefusionviewer_BA.cpp
+onlinefusionviewer.cpp
+${onlinefusion_HEADERS_MOC}
+)
+
+target_link_libraries(onlinefusionBA
 geometryfusion_mipmap_cpu geometryfusion_aos
 camerautils
 auxiliary

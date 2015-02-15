@@ -43,7 +43,6 @@
 #include "meshcelltraversal_compact.hpp"
 
 
-
 //########################## OwnBranchIndicesArray_ ############################
 
 FusionMipMapCPU::OwnBranchIndicesArray_::OwnBranchIndicesArray_()
@@ -175,17 +174,6 @@ void FusionMipMapCPU::OwnBranchIndicesCompactArray_::reserve(size_t count){
 		size_t capacity = count;
 
 		MCNCompact *array = NULL;
-
-		//The non-working C-Version
-//		array = (MeshCellNeighborhood*)malloc(capacity*sizeof(MeshCellNeighborhood));
-//		bool result = posix_memalign((void**)&array,sizeof(MeshCellNeighborhood),capacity*sizeof(MeshCellNeighborhood));
-//		if(_capacity){
-//			fprintf(stderr,"\nWARNING: Actually resizing MeshCellNeighborhood Array => INEFFICIENT!");
-//			if(_size){
-//				memcpy(array,_array,_size*sizeof(MeshCellNeighborhood));
-//			}
-//			free(_array);
-//		}
 
 		//The C++-Version
 		array = new MCNCompact[capacity];
@@ -345,15 +333,6 @@ void FusionMipMapCPU::OwnMeshCellArray_::reserve(size_t count){
 		//TODO: Possible std::vector-like power of 2
 		size_t capacity = count;
 		MeshCell *array = NULL;
-//		array = (MeshCell*)malloc(capacity*sizeof(MeshCell));
-//		bool result = posix_memalign((void**)&array,sizeof(MeshCell),capacity*sizeof(MeshCell));
-//		if(_capacity){
-//			fprintf(stderr,"\nWARNING: Actually resizing MeshCell Array => INEFFICIENT!");
-//			if(_size){
-//				memcpy(array,_array,_size*sizeof(MeshCell));
-//			}
-//			free(_array);
-//		}
 
 		array = new MeshCell[capacity];
 		if(_capacity){
@@ -601,22 +580,6 @@ _threadMeshing(false)
   totalMemoryForVectors += _meshCellIndicesLeaf.capacity()*sizeof(LeafNeighborhood);
   fprintf(stderr,"\nTotal Memory reserved for Vectors = %li Bytes",totalMemoryForVectors);
 
-//  usedMemory = getProcessMemory();
-//  fprintf(stderr,"\nUsed Memory: %li Bytes",usedMemory.size*usedMemory.pageSize);
-
-
-//	fprintf(stderr,"\nPress Enter to resize the vectors");
-//	fprintf(stderr,"%s",fgets(input,256,stdin));
-//	//  MeshCell testCell(7,0,0,0,1,BRANCHINIT);
-//	//  _meshCells.resize(numberMeshCells,testCell);
-//  _meshCellIndicesBranch.resize(_nBranchesTotal);
-//  _leafParent.resize(_nLeavesTotal);
-//  _meshCellIndicesLeaf.resize(_nLeavesTotal);
-////  _meshCellIndicesBranch.resize(1);
-////  _leafParent.resize(1);
-////  _meshCellIndicesLeaf.resize(1);
-//  fprintf(stderr,"\nResized the vectors");
-
 	_boxMin.x = _boxMin.y = _boxMin.z = _boxMax.x = _boxMax.y = _boxMax.z = 0;
   //Add a single root node with no Children to the tree
   _nLeavesUsed = 0; _nLeavesQueuedSurface = 0; _nBranchesUsed = 16;
@@ -753,7 +716,6 @@ FusionMipMapCPU::~FusionMipMapCPU()
 
 	fprintf(stderr,"\nDeleting Meshes in Mesh Cells...");
 	for(size_t i=0;i<_meshCells.size();i++){
-//		delete _meshCells[i].mesh;
 		delete _meshCells[i].meshinterleaved;
 	}
 
@@ -919,28 +881,6 @@ FusionMipMapCPU::~FusionMipMapCPU()
 			fprintf(stderr,"\nLogfiles written.");
 
 
-//			double sumTicksTraversal = 0.0; double sumTicksSDF = 0.0;
-//			double sumTimeTraversal = 0.0; double sumTimeSDF = 0.0;
-//
-//			for(size_t i=0;i<_frameStatistics.size();i++){
-//				sumTicksTraversal += _frameStatistics[i].timeTraversal;
-//				sumTicksSDF += _frameStatistics[i].timeSDFUpdate;
-//				double timeTraversal = _frameStatistics[i].timeTraversal/cv::getTickFrequency()*1000.0;
-//				double timeSDF = _frameStatistics[i].timeSDFUpdate/cv::getTickFrequency()*1000.0;
-//				sumTimeTraversal += timeTraversal;
-//				sumTimeSDF += timeSDF;
-//				fprintf(stderr,"\n %f %f %f %f",sumTicksTraversal/cv::getTickFrequency()*1000.0,sumTimeTraversal,
-//						sumTicksSDF/cv::getTickFrequency()*1000.0,sumTimeSDF);
-//			}
-//
-//			fprintf(stderr,"\nFrames Added: %i, Statistics Size: %li",_framesAdded,_frameStatistics.size());
-//			fprintf(stderr,"\nTick Frequency: %f",cv::getTickFrequency());
-//
-//			fprintf(stderr,"\nOriginal Sums: Traversal: %f vs %f, SDF: %f vs %f",
-//					sumTicksTraversal,_avgTimeQueueSurface,sumTicksSDF,_avgTimeBricksSurface);
-//			fprintf(stderr,"\nTime Sums: Traversal: %f vs %f, SDF: %f vs %f",
-//					sumTicksTraversal/cv::getTickFrequency()*1000.0,_avgTimeQueueSurface/cv::getTickFrequency()*1000.0,
-//					sumTicksSDF/cv::getTickFrequency()*1000.0,_avgTimeBricksSurface/cv::getTickFrequency()*1000.0);
 		}
 		if(_meshTimes.size()>1){
 			std::fstream logfileMesh;
@@ -1277,8 +1217,10 @@ void computeBoundingboxIntCPU
 		int *maxX, int *maxY, int *maxZ
 )
 {
-	for(int y=0;y<imHeight;y++){
+
+	for(int y=0;y<imHeight/2;y++){
 		for(int x=0;x<imWidth;x++){
+
 			float pz = depth[y*imWidth+x]*scaling;
 			if(pz>0.0f && pz<maxcamdistance){
 				float px = ((float)x-p.cx)/p.fx*pz;
@@ -1449,16 +1391,6 @@ int FusionMipMapCPU::addMap(cv::Mat &depth, CameraInfo caminfo,
 
 	fprintf(stderr, "T");
 
-//	transformLoopSimPrecalculated(qxp1,qxp2,qxp3,qyp1,qyp2,qyp3,p.t1,p.t2,p.t3,
-//			_n,_bandwidth,_brickLength,_imageWidth,_imageHeight,_boxMin,_boxMax,data,
-//			_tree,_nBranchesUsed,_nLeavesTotal,_nLeavesUsed,_nLeavesQueued,
-//			_leafNumber,_leafPos,_leafScale,_queueIndexOfLeaf,_child,_branchNumber);
-
-//	transformLoopSimPrecalculatedNeg(qxp1,qxp2,qxp3,qyp1,qyp2,qyp3,p.t1,p.t2,p.t3,
-//			_n,_bandwidth,_brickLength,_imageWidth,_imageHeight,_boxMin,_boxMax,data,
-//			_tree,_nBranchesUsed,_nLeavesTotal,_nLeavesUsed,_nLeavesQueuedSurface,
-//			_leafNumberSurface,_leafPos,_leafScale,_queueIndexOfLeaf,_child,_branchNumber);
-
 	transformLoopSimPrecalculatedNeg_vis(qxp1,qxp2,qxp3,qyp1,qyp2,qyp3,p.t1,p.t2,p.t3,
 			_n,_bandwidth,_brickLength,_imageWidth,_imageHeight,_boxMin,_boxMax,data,
 			_tree,_nBranchesUsed,_nLeavesTotal,_nLeavesUsed,_nLeavesQueuedSurface,
@@ -1472,9 +1404,7 @@ int FusionMipMapCPU::addMap(cv::Mat &depth, CameraInfo caminfo,
 	fprintf(stderr,"F");
 	Frustum frustum(caminfo,depth.cols,depth.rows,FRUSTUM_FAR);
 
-//	float tx = trans.at<double>(0,0);
-//	float ty = trans.at<double>(2,0);
-//	float tz = trans.at<double>(2,0);
+
 
 	fprintf(stderr,"[%i|%i]",_nLeavesQueuedSurface,_nLeavesQueuedFrustum);
 	fprintf(stderr,"!");
@@ -1626,82 +1556,6 @@ int FusionMipMapCPU::addMap(const cv::Mat &depth, CameraInfo caminfo, const cv::
 
 	const ushort *depthdata = (ushort*)depth.data;
 
-//	if(_numCheckImages){
-//		_lastDepthImages.push_front(depth);
-//		_lastCameraInfos.push_front(caminfo);
-//		if(_lastDepthImages.size()>_numCheckImages+1){
-//			_lastDepthImages.pop_back();
-//			_lastCameraInfos.pop_back();
-//		}
-////		ushort *depthdata2 = (ushort*)_lastDepthImages.back().data;
-//		ushort *depthdata2 = (ushort*)depth.data;
-//		int nx = _lastDepthImages.back().cols;
-//		int ny = _lastDepthImages.back().rows;
-//
-////		cv::Mat oldImage = depth.clone();
-////		cv::imshow("Old",oldImage);
-//
-//		std::list<cv::Mat>::iterator itImage = _lastDepthImages.begin(); itImage++;
-//		std::list<CameraInfo>::iterator itCaminfo = _lastCameraInfos.begin(); itCaminfo++;
-//		while(itImage!=_lastDepthImages.end() && itCaminfo!=_lastCameraInfos.end()){
-//
-//			ushort *checkdata = (ushort*)itImage->data;
-//			int nxCheck = itImage->cols;
-//			int nyCheck = itImage->rows;
-//			cv::Mat intCheck = itCaminfo->getIntrinsic();
-//			float fxCheck = intCheck.at<double>(0,0);
-//			float fyCheck = intCheck.at<double>(1,1);
-//			float cxCheck = intCheck.at<double>(0,2);
-//			float cyCheck = intCheck.at<double>(1,2);
-//
-//			CameraInfo relative = caminfo;
-//			relative.setExtrinsic(itCaminfo->getExtrinsicInverse()*relative.getExtrinsic());
-//
-//			cv::Mat rotCheck = relative.getRotation();
-//			cv::Mat transCheck = relative.getTranslation();
-//			cv::Mat intrCheck = relative.getIntrinsic();
-//
-//			camPamsFloat pCheck(
-//					rotCheck.at<double>(0,0), rotCheck.at<double>(0,1), rotCheck.at<double>(0,2),
-//					rotCheck.at<double>(1,0), rotCheck.at<double>(1,1), rotCheck.at<double>(1,2),
-//					rotCheck.at<double>(2,0), rotCheck.at<double>(2,1), rotCheck.at<double>(2,2),
-//					transCheck.at<double>(0,0),transCheck.at<double>(1,0),transCheck.at<double>(2,0),
-//					intrCheck.at<double>(0,0), intrCheck.at<double>(1,1),
-//					intrCheck.at<double>(0,2), intrCheck.at<double>(1,2));
-//
-//
-//			for(int y=0;y<ny;y++){
-//				for(int x=0;x<nx;x++){
-//					float h = depthdata2[y*nx+x]*scaling;
-//					if(h>0.0f && h<maxcamdistance){
-//						float px = (x-pCheck.cx)/pCheck.fx*h;
-//						float py = (y-pCheck.cy)/pCheck.fy*h;
-//						float pz = h;
-//						float qx = pCheck.r11*px + pCheck.r12*py + pCheck.r13*pz + pCheck.t1;
-//						float qy = pCheck.r21*px + pCheck.r22*py + pCheck.r23*pz + pCheck.t2;
-//						float qz = pCheck.r31*px + pCheck.r32*py + pCheck.r33*pz + pCheck.t3;
-//
-//						int imx = (int)(floor(qx/qz*fxCheck+cxCheck));
-//						int imy = (int)(floor(qy/qz*fyCheck+cyCheck));
-//
-//						if(imx>=0 && imx<nxCheck && imy>=0 && imy<nyCheck){
-//							float h2 = checkdata[imy*nxCheck+imx]*scaling;
-//							if(h2<maxcamdistance && h2>qz){
-//								depthdata2[y*nx+x] = 0;
-//							}
-//						}
-//					}
-////					depthdata2[y*nx+x] = 0;
-//				}
-//			}
-//
-////			cv::imshow("New",depth);
-//
-//			itImage++; itCaminfo++;
-//		}
-////		cv::waitKey(0);
-//	}
-
 
 	//Empty the Data Queue
 	//TODO: Instead O(n) operation go through the queue
@@ -1715,7 +1569,7 @@ int FusionMipMapCPU::addMap(const cv::Mat &depth, CameraInfo caminfo, const cv::
 		_boxMin.x = _boxMin.y = _boxMin.z = 1e6;
 		_boxMax.x = _boxMax.y = _boxMax.z = -1e6;
 		fprintf(stderr,"\nComputing Initial Bounding Box");
-		computeBoundingboxIntCPU(p,depthdata,scaling,maxcamdistance,
+		computeBoundingboxIntCPU(p,(ushort*)depth.data,scaling,maxcamdistance,
 				depth.cols,depth.rows,_bandwidth,
 				&_boxMin.x,&_boxMin.y,&_boxMin.z,&_boxMax.x,&_boxMax.y,&_boxMax.z);
 
@@ -1854,21 +1708,8 @@ int FusionMipMapCPU::addMap(const cv::Mat &depth, CameraInfo caminfo, const cv::
 
 #endif
 
-
-//	fprintf(stderr,"!");
 	double time2 = (double)cv::getTickCount();
-//
-//	fprintf(stderr,"F");
-//	Frustum frustum(caminfo,depth.cols,depth.rows,FRUSTUM_FAR);
-//
-//	float tx = trans.at<double>(0,0);
-//	float ty = trans.at<double>(2,0);
-//	float tz = trans.at<double>(2,0);
-//
-//	fprintf(stderr,"[%i|%i]",_nLeavesQueuedSurface,_nLeavesQueuedFrustum);
-//	fprintf(stderr,"!");
-//
-//
+
 	double time3 = (double)cv::getTickCount();
 
 	if(_nLeavesUsed < _nLeavesTotal && _nBranchesUsed < _nBranchesTotal &&
@@ -1888,7 +1729,6 @@ int FusionMipMapCPU::addMap(const cv::Mat &depth, CameraInfo caminfo, const cv::
 		time4 = (double)cv::getTickCount();
 	}
 	else{
-//		fprintf(stderr, "U");
 		updateWrapperInteger(SDFUpdateParameterInteger(
 				(const ushort*)depthdata, scaling, maxcamdistance, (const uchar*)rgb.data,
 				_imageWidth,_imageHeight,
@@ -1899,7 +1739,6 @@ int FusionMipMapCPU::addMap(const cv::Mat &depth, CameraInfo caminfo, const cv::
 
 		time4 = (double)cv::getTickCount();
 
-//		fprintf(stderr,"!");
 	}
 
 	if(_nLeavesUsed < _nLeavesTotal && _nBranchesUsed < _nBranchesTotal &&
@@ -1934,30 +1773,12 @@ int FusionMipMapCPU::addMap(const cv::Mat &depth, CameraInfo caminfo, const cv::
 	if(_performIncrementalMeshing){
 
 #ifdef SEPARATE_MESHCELL_STRUCTURE
-		//TODO: Das hier in den Nachbarthread migrieren
-//		if(_newBudsSinceMeshingToClear.subtreeBuds->size() ||
-//				_newBudsSinceMeshingToClear.subtreeBudsParentLeaf->size() ||
-//				_newBudsSinceMeshingToClear.leafBuds->size()){
-//			fprintf(stderr,"\nERROR: Vector of Branches queued for MeshCell Structure"
-//					" Creation not yet empty: %li %li %li",
-//					_newBudsSinceMeshingToClear.subtreeBuds->size(),
-//					_newBudsSinceMeshingToClear.subtreeBudsParentLeaf->size(),
-//					_newBudsSinceMeshingToClear.leafBuds->size());
-//		}
-//		BudsAnchor temp = _newBudsSinceMeshingToClear;
-//		_newBudsSinceMeshingToClear = _newBudsSinceMeshingToAccumulate;
-//		_newBudsSinceMeshingToAccumulate = temp;
-//		_treeSizeForMeshing = _nBranchesUsed;
 
 		beforeUpdateMeshCellStructure();
 
 		updateMeshCellStructure();
 
 		afterUpdateMeshCellStructure();
-
-//		_treeSizeSinceMeshing = _treeSizeForMeshing;
-//
-//		pushLeafQueueForMeshing();
 
 #else
 
@@ -2036,30 +1857,6 @@ int FusionMipMapCPU::addMap(const cv::Mat &depth, CameraInfo caminfo, const cv::
 
 void FusionMipMapCPU::queryNeighborsWithoutMeshCells(){
 
-	//TEST
-
-//	for(volumetype i=0;i<_nLeavesQueuedSurface;i++){
-//		volumetype leaf = _leafNumberSurface[i];
-//		sidetype3 leafpos = _leafPos[leaf];
-//		sidetype leafscale = _leafScale[leaf];
-//
-//		for(sidetype lpx=leafpos.x-leafscale*_brickLength;lpx<=leafpos.x+leafscale*_brickLength;lpx+=leafscale*_brickLength){
-//			for(sidetype lpy=leafpos.y-leafscale*_brickLength;lpy<=leafpos.y+leafscale*_brickLength;lpy+=leafscale*_brickLength){
-//				for(sidetype lpz=leafpos.z-leafscale*_brickLength;lpz<=leafpos.z+leafscale*_brickLength;lpz+=leafscale*_brickLength){
-//					queryPointDepthSingle_func_subtree(lpx,lpy,lpz,leafscale,
-//							_n,_brickLength,_tree,_nBranchesUsed,_nLeavesTotal,_nLeavesUsed,_nLeavesQueuedSurface,
-//							_leafNumberSurface,_leafPos,_leafScale,_queueIndexOfLeaf,_leafParent,
-//							_newBudsSinceMeshingToQueue.subtreeBuds->data(),
-//							_newBudsSinceMeshingToQueue.subtreeBudsParentLeaf->data(),
-//							_newBudsSinceMeshingToQueue.leafBuds->data(),
-//							_numberOfQueuedTreeBuds,_numberOfQueuedLeafBuds,
-//							_treeSizeSinceMeshing);
-//				}
-//			}
-//		}
-//
-//
-//	}
 }
 
 void FusionMipMapCPU::beforeUpdateMeshCellStructure(){
@@ -2092,8 +1889,6 @@ void FusionMipMapCPU::afterUpdateMeshCellStructure(){
 	pushMeshCellQueue();
 	eprintf("\nMesh Cell queue pushed");
 }
-
-
 
 void imageSaveFunctionFloat(std::vector<cv::Mat> depthImages, std::vector<std::vector<cv::Mat> > rgbImages,size_t oldSize){
 	for(size_t p=0;p<depthImages.size();p++){
@@ -2725,87 +2520,6 @@ void FusionMipMapCPU::pushMeshCellQueue()
 }
 
 
-//typedef struct MeshUpdateParameter_ {
-//	std::list<size_t> *meshCellQueue;
-//	std::vector<bool> *meshCellIsQueued;
-//	std::vector<MeshCell> *meshCells;
-//	std::vector<volumetype> *leafParent;
-//	MarchingCubesIndexed *mc;
-//	treeinfo *info;
-//} MeshUpdateParameter;
-
-//class MeshUpdateCallback
-//{
-//public:
-//	virtual void beginUpdate(int updatedMeshCells) = 0;
-//	virtual void update(int idx, MeshCell* cell) = 0;
-//	virtual void endUpdate() = 0;
-//
-//};
-//
-//class RosMeshUpdateCallback : public MeshUpdateCallback
-//{
-//public:
-//	virtual void beginUpdate(int updatedMeshCells)
-//	{
-//		currentMeshUpdate.cells.resize(updatedMeshCells);
-//	}
-//	virtual void update(int idx, MeshCell* cell)
-//	{
-//		MeshCell c;
-//		// copy data to message
-//		currentMeshUpdate.cells.push_back();
-//	}
-//	virtual void endUpdate()
-//	{
-//		// send message
-//	}
-//};
-
-//void meshWrapperSeparate
-//(
-//		std::list<size_t> *meshCellQueue,
-//		std::vector<bool> *meshCellIsQueued,
-//		std::vector<MeshCell> *meshCells,
-//		ParentArray *leafParent,
-//		MarchingCubesIndexed *mc,
-//		treeinfo *info,
-//		volatile int *meshingDone,
-//		MeshSeparate *mesh,
-//		std::vector<FusionMipMapCPU::MeshStatistic> *meshTimes
-//)
-//{
-//	size_t numVertices = 0;
-//	size_t numIndices = 0;
-//
-//	size_t oldSize = meshCellQueue->size();
-//	size_t meshcellsSize = meshCells->size();
-//	double timeBefore = (double)cv::getTickCount();
-//
-//	for(std::list<size_t>::iterator i=meshCellQueue->begin();i!=meshCellQueue->end();){
-//		(*meshCells)[*i].updateMesh(*info,*leafParent,*mc);
-//		numVertices += (*meshCells)[*i].mesh->x.size();
-//		numIndices += (*meshCells)[*i].mesh->f.size();
-//		i++;
-//		meshCellQueue->pop_front();
-//	}
-//	double timeMiddle = (double)cv::getTickCount();
-//
-//	*mesh = MeshSeparate(3);
-//	for(unsigned int i=0;i<meshcellsSize;i++){
-//				*mesh += *((*meshCells)[i].mesh);
-//	}
-//	double timeAfter = (double)cv::getTickCount();
-//
-//	double timeUpdate = timeMiddle-timeBefore;
-//	double timeSum = timeAfter-timeMiddle;
-//
-//	if(meshTimes) meshTimes->push_back(FusionMipMapCPU::MeshStatistic(0,oldSize,meshcellsSize,timeUpdate,timeSum));
-//
-//	*meshingDone = 0;
-//}
-
-
 MeshInterleaved fusedMesh(
 		const FusionMipMapCPU::MeshCellArray &meshes,
 		const FusionMipMapCPU::BranchIndicesArray &branches
@@ -3087,7 +2801,7 @@ bool FusionMipMapCPU::grow()
 	sidetype xm = (_boxMin.x<0)*((-_boxMin.x)/_n+1);
 	sidetype ym = (_boxMin.y<0)*((-_boxMin.y)/_n+1);
 	sidetype zm = (_boxMin.z<0)*((-_boxMin.z)/_n+1);
-//	fprintf(stderr,"\nDescriptors before processing: [%i %i %i]-[%i %i %i]",xm,ym,zm,xp,yp,zp);
+
 	sidetype cut = xp&xm;
 	if(cut){
 		if(xm>xp) xm = 2*highestPowerOf2(xm) + (xm&(~cut));
@@ -3103,7 +2817,7 @@ bool FusionMipMapCPU::grow()
 		if(zm>zp) zm = 2*highestPowerOf2(zm) + (zm&(~cut));
 		else zp = 2*highestPowerOf2(zp) + (zp&(~cut));
 	}
-//	fprintf(stderr,"\nDescriptors after processing: [%i %i %i]-[%i %i %i]",xm,ym,zm,xp,yp,zp);
+
 	sidetype maxAddLevel = highestPowerOf2(xm);
 	if(maxAddLevel < highestPowerOf2(xp)) maxAddLevel = highestPowerOf2(xp);
 	if(maxAddLevel < highestPowerOf2(ym)) maxAddLevel = highestPowerOf2(ym);
@@ -3229,7 +2943,7 @@ bool FusionMipMapCPU::grow()
 	fprintf(stderr,"\nFilling Top Layers...");
 	volumetype index = (maxAddLevel-1)*16;
 	for(sidetype level=0;level<maxAddLevel;level++){
-//		fprintf(stderr,"\nIndex: %i",index);
+
 		unsigned int dec = 1<<level;
 		volumetype co = 0;
 		sidetype oxchild = 0; sidetype oychild = 0; sidetype ozchild = 0;
@@ -3348,23 +3062,11 @@ MeshSeparate FusionMipMapCPU::getMeshSeparateMarchingCubes(MeshSeparate mesh)
 
 	eprintf("\nGetting Nonindexed Mesh Recursively");
 	return getMeshRecursive(mesh);
-
-//	fprintf(stderr,"\nGetting Nonindexed Mesh Recursively with Parent Information");
-//	return getMeshRecursiveIncremental(mesh);
-
-//	fprintf(stderr,"\nGetting Indexed Mesh Approximate");
-//	return getMeshMarchingCubesApproximate(mesh);
 }
 
 MeshInterleaved FusionMipMapCPU::getMeshInterleavedMarchingCubes(MeshInterleaved mesh)
 {
 
-
-//	fprintf(stderr,"\nGetting Nonindexed Mesh Recursively");
-//	return getMeshRecursive(mesh);
-
-//	fprintf(stderr,"\nGetting Nonindexed Mesh Recursively with Parent Information");
-//	return getMeshRecursiveIncremental(mesh);
 
 	eprintf("\nGetting Indexed Interleaved Mesh Approximate");
 
@@ -3374,287 +3076,6 @@ MeshInterleaved FusionMipMapCPU::getMeshInterleavedMarchingCubes(MeshInterleaved
 }
 
 
-//MeshSeparate FusionMipMapCPU::getMeshMarchingCubesApproximate(MeshSeparate mesh)
-//{
-//
-////	unsigned int degenerate_faces = 0;
-////	fprintf(stderr,"\nUpdating Mesh Cells before Summation");
-////	for(size_t i=0;i<_meshCellIndicesLeaf.size();i++){
-////		for(size_t j=0;j<_meshCellIndicesLeaf[i].size();j++){
-////			_meshCells[_meshCellIndicesLeaf[i][j]].updateMesh(
-////					treeinfo(&(_meshCells[_meshCellIndicesLeaf[i][j]].mesh),_brickLength,_brickSize,
-////							std::min((double)_framesAdded,MIN_WEIGHT_FOR_SURFACE),
-////							_offset,_scale,&degenerate_faces,_nBranchesUsed,_nLeavesUsed,_tree,
-////							_leafPos,_leafScale,_distance,_weights,_color),_leafParent);
-////		}
-////	}
-//
-////	if(_meshingDone==0){
-////	double time0 = (double)cv::getTickCount();
-////
-////	mesh = Mesh(3);
-////	for(unsigned int i=0;i<_meshCells.size();i++){
-////		if(!_meshCellIsQueued[i])
-////			if(_meshCells[i].mesh)
-////				mesh += *(_meshCells[i].mesh);
-////	}
-////
-////	double time1 = (double)cv::getTickCount();
-////	_avgTimeSumMesh += time1-time0;
-////	}
-////
-////	fprintf(stderr,"\n Mesh Size (%li %li)",mesh.x.size(),mesh.f.size());
-////	return mesh;
-//
-//	fprintf(stderr,"\nMesh-Cell Mesh has %li vertices and %li indices",_meshSeparateCurrent->x.size(),_meshSeparateCurrent->f.size());
-//	return *_meshSeparateCurrent;
-//}
-
-
-
-//MeshSeparate FusionMipMapCPU::getMeshMarchingCubesSlowOpenMP(MeshSeparate mesh)
-//{
-//	volumetype nNodes = _nBranchesTotal;
-//	volumetype nLeaves = std::min(_nLeavesUsed,_nLeavesTotal);
-//
-//	float minWeight = std::min((double)_framesAdded,MIN_WEIGHT_FOR_SURFACE);
-//
-//
-////		sidetype n = _n;
-////	sidetype xmin = 0;  sidetype ymin = 0;  sidetype zmin = 0;
-////	sidetype xmax = n-1; sidetype ymax = n-1; sidetype zmax = n-1;
-//
-//
-//
-//
-//
-////	sidetype n = 8192;
-////	sidetype xmin = 500+16384;  sidetype ymin = 0+8192;  sidetype zmin = n/4;
-////	sidetype xmax = n/2+16384; sidetype ymax = n/2+8192; sidetype zmax = 3*n/4;
-//
-//
-//
-//	//Das liefert auf hoechster Aufloesung schonmal CLaudias Buero und die Sozialniesche aus 10-13
-//// 	sidetype xdim = 4096;
-//// 	sidetype ydim = 3072;
-//// 	sidetype zdim = 8192;
-//// 	sidetype n = _n;
-//// 	sidetype xmin = sidetype(std::max(0,int(-_offset.x/_scale)-1000));
-//// 	sidetype ymin = sidetype(std::max(0,int(-_offset.y/_scale)-1500));
-//// 	sidetype zmin = sidetype(std::max(0,int(-_offset.z/_scale)-500));
-//// 	sidetype xmax = std::min(n-1,xmin+xdim);
-//// 	sidetype ymax = std::min(n-1,ymin+ydim);
-//// 	sidetype zmax = std::min(n-1,zmin+zdim);
-//
-//	sidetype xdim = 8192;
-//	sidetype ydim = 3072;
-//	sidetype zdim = 10000;
-//	sidetype n = _n;
-//	sidetype xmin = sidetype(std::max(0,int(-_offset.x/_scale)-4096));
-//	sidetype ymin = sidetype(std::max(0,int(-_offset.y/_scale)-1500));
-//	sidetype zmin = sidetype(std::max(0,int(-_offset.z/_scale)-500));
-//	sidetype xmax = std::min(n-1,xmin+xdim);
-//	sidetype ymax = std::min(n-1,ymin+ydim);
-//	sidetype zmax = std::min(n-1,zmin+zdim);
-//
-////	sidetype xdim = 2048;
-////	sidetype ydim = 2048;
-////	sidetype zdim = 16192;
-////	sidetype n = _n;
-////	sidetype xmin = sidetype(std::max(0,int(-_offset.x/_scale)-110));
-////	sidetype ymin = sidetype(std::max(0,int(-_offset.y/_scale)-1024));
-////	sidetype zmin = sidetype(std::max(0,int(-_offset.z/_scale)-500));
-////	sidetype xmax = std::min(n-1,xmin+xdim);
-////	sidetype ymax = std::min(n-1,ymin+ydim);
-////	sidetype zmax = std::min(n-1,zmin+zdim);
-//
-//
-////	sidetype xdim = 4096;
-////	sidetype ydim = 3072;
-////	sidetype zdim = 32384;
-////	sidetype n = _n;
-////	sidetype xmin = sidetype(std::max(0,int(-_offset.x/_scale)-2200));
-////	sidetype ymin = sidetype(std::max(0,int(-_offset.y/_scale)-2048));
-////	sidetype zmin = sidetype(std::max(0,int(-_offset.z/_scale)-1000));
-////	sidetype xmax = std::min(n-1,xmin+xdim);
-////	sidetype ymax = std::min(n-1,ymin+ydim);
-////	sidetype zmax = std::min(n-1,zmin+zdim);
-//
-//
-//	fprintf(stderr,"\nThe Tree has the Offset (%f %f %f) which gives a range"
-//	" (%i %i %i)-(%i % i%i)",_offset.x,_offset.y,_offset.z,xmin,ymin,zmin,xmax,ymax,zmax);
-//
-//
-//
-//	sidetype blockLength = 500;
-//	sidetype step = 1;
-//
-//
-//	volumetype *index = new volumetype[blockLength*blockLength*blockLength];
-//
-//	for(sidetype ox=xmin;ox<xmax;ox+=step*(blockLength-1)){
-//		for(sidetype oy=ymin;oy<ymax;oy+=step*(blockLength-1)){
-//			for(sidetype oz=zmin;oz<zmax;oz+=step*(blockLength-1)){
-//				fprintf(stderr," block(%i %i %i)",ox,oy,oz);
-//
-//#ifdef USE_OPENMP_MARCHINGCUBESSLOW
-//			omp_set_dynamic(OPENMP_THREADS);
-//#pragma omp parallel for
-//#endif
-//				for(sidetype x=0;x<blockLength;x++){
-//					for(sidetype y=0;y<blockLength;y++){
-//						for(sidetype z=0;z<blockLength;z++){
-//							index[(z*blockLength+y)*blockLength+x] =
-//								getBrickIndexMipMap2(ox+x,oy+y,oz+z,_n,_brickLength,_brickSize,nNodes,nLeaves,_tree,DEADBRANCH);
-//							if(index[(z*blockLength+y)*blockLength+x]>=DEADBRANCH &&
-//									((oz+z)%_brickLength==0) && ((oy+y)%_brickLength) && ((ox+x)%_brickLength)){
-//								z+=_brickLength-1;
-//							}
-//						}
-//					}
-//				}
-//				fprintf(stderr,"...");
-//
-//#ifdef USE_OPENMP_MARCHINGCUBESSLOW
-//			omp_set_dynamic(OPENMP_THREADS);
-//#pragma omp parallel for
-//#endif
-//				for(sidetype x=0;x<blockLength-1;x++){
-//					MeshSeparate mx(3);
-//					Vertex3f vertlist[12];
-//					VertexColor collist[12];
-//					MarchingCubes mc;
-//					for(sidetype y=0;y<blockLength-1;y++){
-//						for(sidetype z=0;z<blockLength-1;z++){
-////							if(false){
-//							if(((oz+z)%_brickLength==0) && index[(z*blockLength+y)*blockLength+x]>=DEADBRANCH){
-//								z+=_brickLength-1;
-//							}
-//							else{
-//								volumetype idx[8] = {
-//								index[(z*blockLength+y)*blockLength+x],
-//								index[(z*blockLength+y)*blockLength+x+1],
-//								index[(z*blockLength+y+1)*blockLength+x+1],
-//								index[(z*blockLength+y+1)*blockLength+x],
-//								index[((z+1)*blockLength+y)*blockLength+x],
-//								index[((z+1)*blockLength+y)*blockLength+x+1],
-//								index[((z+1)*blockLength+y+1)*blockLength+x+1],
-//								index[((z+1)*blockLength+y+1)*blockLength+x]
-//								};
-//
-//								bool valid = true;
-//								for(volumetype i=0;i<8;i++) valid &= (idx[i]<DEADBRANCH);
-//								if(valid){
-//									sidetype3 o[8]; for(volumetype i=0;i<8;i++) o[i] = _leafPos[idx[i]];
-//									sidetype  s[8]; for(volumetype i=0;i<8;i++) s[i] = _leafScale[idx[i]];
-//
-//									sidetype bx[8] = {
-//											(ox+x  -o[0].x)/s[0],
-//											(ox+x+1-o[1].x)/s[1],
-//											(ox+x+1-o[2].x)/s[2],
-//											(ox+x  -o[3].x)/s[3],
-//											(ox+x  -o[4].x)/s[4],
-//											(ox+x+1-o[5].x)/s[5],
-//											(ox+x+1-o[6].x)/s[6],
-//											(ox+x  -o[7].x)/s[7]
-//									};
-//									sidetype by[8] = {
-//											(oy+y  -o[0].y)/s[0],
-//											(oy+y  -o[1].y)/s[1],
-//											(oy+y+1-o[2].y)/s[2],
-//											(oy+y+1-o[3].y)/s[3],
-//											(oy+y  -o[4].y)/s[4],
-//											(oy+y  -o[5].y)/s[5],
-//											(oy+y+1-o[6].y)/s[6],
-//											(oy+y+1-o[7].y)/s[7]
-//									};
-//									sidetype bz[8] = {
-//											(oz+z  -o[0].z)/s[0],
-//											(oz+z  -o[1].z)/s[1],
-//											(oz+z  -o[2].z)/s[2],
-//											(oz+z  -o[3].z)/s[3],
-//											(oz+z+1-o[4].z)/s[4],
-//											(oz+z+1-o[5].z)/s[5],
-//											(oz+z+1-o[6].z)/s[6],
-//											(oz+z+1-o[7].z)/s[7]
-//									};
-//
-//
-//									float val[8]; weighttype w[8]; VertexColor col[8];
-//									for(volumetype i=0;i<8;i++){
-//										val[i] = _distance[idx[i]*_brickSize + (bz[i]*_brickLength+by[i])*_brickLength+bx[i]];
-//										w[i] =    _weights[idx[i]*_brickSize + (bz[i]*_brickLength+by[i])*_brickLength+bx[i]];
-//										if(_useColor){
-//											col[i] = VertexColor(_color[idx[i]*_brickSize + (bz[i]*_brickLength+by[i])*_brickLength+bx[i]].x,
-//																					 _color[idx[i]*_brickSize + (bz[i]*_brickLength+by[i])*_brickLength+bx[i]].y,
-//																					 _color[idx[i]*_brickSize + (bz[i]*_brickLength+by[i])*_brickLength+bx[i]].z);
-//										}
-//									}
-//
-//									if(weightInfluence(minWeight,w[0],w[1],w[2],w[3],w[4],w[5],w[6],w[7])){
-//
-//										int *table = mc.getColoredTrianglesForCubePrecomputed(vertlist,collist,ox+x,oy+y,oz+z,
-//												_offset.x,_offset.y,_offset.z,
-//												_scale,_scale,_scale,
-//												val[0],val[1],val[2],val[3],val[4],val[5],val[6],val[7],
-//												w[0],w[1],w[2],w[3],w[4],w[5],w[6],w[7],
-//												col[0],col[1],col[2],col[3],col[4],col[5],col[6],col[7],_color);
-//
-//										for (unsigned int i=0;table[i]!=-1;i+=3) {
-//											Vertex3f v0 = vertlist[table[i  ]];
-//											Vertex3f v1 = vertlist[table[i+1]];
-//											Vertex3f v2 = vertlist[table[i+2]];
-//											if((v0.x==v1.x&&v0.y==v1.y&&v0.z==v1.z)||(v2.x==v1.x&&v2.y==v1.y&&v2.z==v1.z)||(v0.x==v2.x&&v0.y==v2.y&&v0.z==v2.z)){
-//
-//											}
-//											else{
-//												mx.x.push_back(v0.x); mx.y.push_back(v0.y); mx.z.push_back(v0.z);
-//												mx.f.push_back(mx.x.size()-1);
-//												mx.x.push_back(v1.x); mx.y.push_back(v1.y); mx.z.push_back(v1.z);
-//												mx.f.push_back(mx.x.size()-1);
-//												mx.x.push_back(v2.x); mx.y.push_back(v2.y); mx.z.push_back(v2.z);
-//												mx.f.push_back(mx.x.size()-1);
-//
-//												if(_useColor){
-//													VertexColor c0 = collist[table[i  ]];
-//													VertexColor c1 = collist[table[i+1]];
-//													VertexColor c2 = collist[table[i+2]];
-//													mx.r.push_back(c0.x/COLOR_MULTIPLICATOR);
-//													mx.g.push_back(c0.y/COLOR_MULTIPLICATOR);
-//													mx.b.push_back(c0.z/COLOR_MULTIPLICATOR);
-//													mx.r.push_back(c1.x/COLOR_MULTIPLICATOR);
-//													mx.g.push_back(c1.y/COLOR_MULTIPLICATOR);
-//													mx.b.push_back(c1.z/COLOR_MULTIPLICATOR);
-//													mx.r.push_back(c2.x/COLOR_MULTIPLICATOR);
-//													mx.g.push_back(c2.y/COLOR_MULTIPLICATOR);
-//													mx.b.push_back(c2.z/COLOR_MULTIPLICATOR);
-//												}
-//											}
-//										}
-//									}
-//								}
-//							}
-//						}
-//					}
-//					fprintf(stderr," %i",(int)mx.x.size());
-//#pragma omp critical
-//					mesh += mx;
-//				}
-//				fprintf(stderr,"!");
-//			}
-//		}
-//	}
-//
-//	delete [] index;
-//
-//
-//	return mesh;
-//}
-//
-//
-//
-//
-//
 MeshSeparate FusionMipMapCPU::getMeshRecursive(MeshSeparate mesh)
 {
 	volumetype nNodes = _nBranchesTotal;
@@ -3673,184 +3094,6 @@ MeshSeparate FusionMipMapCPU::getMeshRecursive(MeshSeparate mesh)
 	return mesh;
 }
 
-//MeshSeparate FusionMipMapCPU::getMeshRecursiveIncremental(MeshSeparate mesh)
-//{
-//	volumetype nNodes = _nBranchesTotal;
-//	volumetype nLeaves = std::min(_nLeavesUsed,_nLeavesTotal);
-//
-//
-//	unsigned int degenerate_faces = 0;
-//
-//	MarchingCubesIndexed mc(_brickLength,_brickLength);
-//
-//
-//	std::vector<MeshCell> meshCells;
-//	std::list<size_t> meshCellQueue;
-//	fprintf(stderr,"\nFilling MeshCells");
-//
-//	addInterior_incremental(leafstack(),
-//			treeinfo(&mesh,_brickLength,_brickSize,std::min((double)_framesAdded,MIN_WEIGHT_FOR_SURFACE),_offset,_scale,
-//					&degenerate_faces,nNodes,nLeaves,_tree,_leafPos,_leafScale,_distance,_weights,_color),
-//					0,_n,0,0,0,BRANCHINIT,mc,_leafParent
-////					,&meshCells
-//					);
-//
-//	fprintf(stderr,"\nUpdating MeshCells");
-//	for(size_t i=0;i<meshCells.size();i++) meshCellQueue.push_back(i);
-//	size_t fullCells = 0;
-//
-//	size_t interiorFullCells = 0;
-//	size_t interiorCells = 0;
-//	size_t wallFullCells = 0;
-//	size_t wallCells = 0;
-//	size_t edgeFullCells = 0;
-//	size_t edgeCells = 0;
-//	size_t cornerFullCells = 0;
-//	size_t cornerCells = 0;
-//
-//	std::vector<size_t> cellsOnlyInRecursive;
-//	std::vector<size_t> cellsOnlyInIncremental;
-//	std::vector<size_t> cellsRecursive(meshCellQueue.begin(),meshCellQueue.end());
-//
-//	for(size_t i=0;i<_meshCells.size();i++){
-//		bool found = false;
-//		for(size_t j=0;j<meshCells.size();j++){
-//			if(_meshCells[i].ox  ==meshCells[j].ox &&
-//				 _meshCells[i].oy  ==meshCells[j].oy &&
-//				 _meshCells[i].oz  ==meshCells[j].oz &&
-//				 _meshCells[i].size==meshCells[j].size &&
-//				 _meshCells[i].type==meshCells[j].type){
-//				found = true; break;
-//			}
-//		}
-//		if(!found){
-//			if(_meshCells[i].type==7 && _meshCells[i].size==8) cellsOnlyInIncremental.push_back(i);
-//		}
-//	}
-//	for(size_t j=0;j<meshCells.size();j++){
-//		bool found = false;
-//		for(size_t i=0;i<_meshCells.size();i++){
-//		if(_meshCells[i].ox  ==meshCells[j].ox &&
-//			  _meshCells[i].oy  ==meshCells[j].oy &&
-//			  _meshCells[i].oz  ==meshCells[j].oz &&
-//				_meshCells[i].size==meshCells[j].size &&
-//			  _meshCells[i].type==meshCells[j].type){
-//				found = true; break;
-//			}
-//		}
-//		if(!found){
-//			cellsOnlyInRecursive.push_back(j);
-//		}
-//	}
-//
-//	fprintf(stderr,"\nComparisons done");
-//
-////	std::vector<size_t> drawQueue = cellsOnlyInIncremental;
-//	std::vector<size_t> drawQueue = cellsRecursive;
-//
-//
-//	for(size_t j=0;j<drawQueue.size();j++){
-////		MeshCell &cell = _meshCells[drawQueue[j]];
-//		MeshCell &cell = meshCells[drawQueue[j]];
-//
-//		if(( (cell.type==0&&cell.lastLeaf[0]<BRANCHINIT)||
-//				 ((cell.type==1 || cell.type==2 || cell.type==3)&&
-//					(cell.lastLeaf[0]<BRANCHINIT && cell.lastLeaf[1]<BRANCHINIT))||
-//				 ((cell.type==4 || cell.type==5 || cell.type==6)&&
-//					(cell.lastLeaf[0]<BRANCHINIT && cell.lastLeaf[1]<BRANCHINIT &&
-//				   cell.lastLeaf[2]<BRANCHINIT && cell.lastLeaf[3]<BRANCHINIT))||
-//				 ( cell.type==7 &&
-//					(cell.lastLeaf[0]<BRANCHINIT && cell.lastLeaf[1]<BRANCHINIT &&
-//					 cell.lastLeaf[2]<BRANCHINIT && cell.lastLeaf[3]<BRANCHINIT&&
-//					 cell.lastLeaf[4]<BRANCHINIT && cell.lastLeaf[5]<BRANCHINIT &&
-//					 cell.lastLeaf[6]<BRANCHINIT && cell.lastLeaf[7]<BRANCHINIT)))){
-//
-////			fprintf(stderr,"\n%li->%li",j,drawQueue[j]);
-////			fprintf(stderr," %i[%i %i %i]%i",cell.type,cell.ox,cell.oy,cell.oz,cell.size);
-//			if(cell.type==0){
-//				if(cell.size==_leafScale[cell.lastLeaf[0]]*_brickLength){
-//					interiorFullCells++;
-//				}
-//				interiorCells++;
-//			}
-//			if(cell.type==1 || cell.type==2 || cell.type==3){
-//				if(cell.size==_leafScale[cell.lastLeaf[0]]*_brickLength &&
-//					 cell.size==_leafScale[cell.lastLeaf[1]]*_brickLength){
-//					wallFullCells++;
-//				}
-//				wallCells++;
-//			}
-//			if(cell.type==4 || cell.type==5 || cell.type==6){
-//				if(cell.size==_leafScale[cell.lastLeaf[0]]*_brickLength &&
-//					 cell.size==_leafScale[cell.lastLeaf[1]]*_brickLength &&
-//					 cell.size==_leafScale[cell.lastLeaf[2]]*_brickLength &&
-//					 cell.size==_leafScale[cell.lastLeaf[3]]*_brickLength){
-//					edgeFullCells++;
-//				}
-//				edgeCells++;
-//			}
-//			if(cell.type==7){
-//				if(cell.size==_leafScale[cell.lastLeaf[0]]*_brickLength &&
-//					 cell.size==_leafScale[cell.lastLeaf[1]]*_brickLength &&
-//					 cell.size==_leafScale[cell.lastLeaf[2]]*_brickLength &&
-//					 cell.size==_leafScale[cell.lastLeaf[3]]*_brickLength &&
-//					 cell.size==_leafScale[cell.lastLeaf[4]]*_brickLength &&
-//					 cell.size==_leafScale[cell.lastLeaf[5]]*_brickLength &&
-//					 cell.size==_leafScale[cell.lastLeaf[6]]*_brickLength &&
-//					 cell.size==_leafScale[cell.lastLeaf[7]]*_brickLength){
-//					cornerFullCells++;
-//				}
-//				cornerCells++;
-//			}
-//
-//			if(cell.size==_leafScale[cell.lastLeaf[0]]*_brickLength){
-//				fullCells++;
-//			}
-//		}
-//		cell.updateMesh(
-//				treeinfo(NULL,_brickLength,_brickSize,
-//						std::min((double)_framesAdded,MIN_WEIGHT_FOR_SURFACE),
-//						_offset,_scale,&degenerate_faces,_nBranchesUsed,_nLeavesUsed,_tree,
-//						_leafPos,_leafScale,_distance,_weights,_color),_leafParent,mc);
-//	}
-//
-//	fprintf(stderr,"\nCells [Full/All] for Recursive Incremental:\nInt: [%li %li] Wall: [%li %li] Edge: [%li %li] Cor: [%li %li]",
-//			interiorFullCells,interiorCells,wallFullCells,wallCells,
-//			edgeFullCells,edgeCells,cornerFullCells,cornerCells);
-//
-//
-//	if(meshCells.size()){
-//		fprintf(stderr,"\nAdding %li MeshCells together",meshCells.size());
-//		mesh = MeshSeparate(3);
-//		for(size_t j=0;j<drawQueue.size();j++){
-//	//		MeshCell &cell = _meshCells[drawQueue[j]];
-//			MeshCell &cell = meshCells[drawQueue[j]];
-////			fprintf(stderr,"\n%li->%li",j,drawQueue[j]);
-////			fprintf(stderr," %i[%i %i %i]%i",cell.type,cell.ox,cell.oy,cell.oz,cell.size);
-////			if(cell.type==7) fprintf(stderr,"\n [%i %i %i %i %i %i %i %i]",
-////					cell.lastLeaf[0],cell.lastLeaf[1],cell.lastLeaf[2],cell.lastLeaf[3],
-////					cell.lastLeaf[4],cell.lastLeaf[5],cell.lastLeaf[6],cell.lastLeaf[7]);
-////			if(cell.type==7) fprintf(stderr,"[%i %i %i %i %i %i %i %i]",
-////							_leafScale[cell.lastLeaf[0]],_leafScale[cell.lastLeaf[1]],_leafScale[cell.lastLeaf[2]],_leafScale[cell.lastLeaf[3]],
-////							_leafScale[cell.lastLeaf[4]],_leafScale[cell.lastLeaf[5]],_leafScale[cell.lastLeaf[6]],_leafScale[cell.lastLeaf[7]]);
-////			if(cell.type==7) fprintf(stderr," [%i %i %i %i %i %i %i %i]",
-////					cell.lastBranch[0],cell.lastBranch[1],cell.lastBranch[2],cell.lastBranch[3],
-////					cell.lastBranch[4],cell.lastBranch[5],cell.lastBranch[6],cell.lastBranch[7]);
-//				mesh += *cell.mesh;
-//		}
-//	}
-//	else{
-//		fprintf(stderr,"\nThere are no MeshCells, the Update took place in the Tree Traversal");
-//	}
-//
-//
-//
-//
-//	return mesh;
-//}
-
-
-
 MeshSeparate FusionMipMapCPU::getMeshStructural(unsigned int structureType,MeshSeparate mesh)
 {
 	fprintf(stderr," TODO: Mit Meshaddition anpassen");
@@ -3858,7 +3101,7 @@ MeshSeparate FusionMipMapCPU::getMeshStructural(unsigned int structureType,MeshS
 		fprintf(stderr,"\nComputing Octree Line Mesh");
 		unsigned int prevIndex = mesh.x.size();
 		float width = 5.0f;
-//		for(int w=_brickLength;w<=_n;w*=2) width += 1.0f;
+
 		getTreeLinesBoxMipMap(_tree,0,_brickLength,_nBranchesTotal,_n/2,0,0,0,mesh,width);
 		for(unsigned int i=prevIndex;i<mesh.x.size();i++){
 			mesh.x[i] = _offset.x+mesh.x[i]*_scale;
@@ -3870,7 +3113,7 @@ MeshSeparate FusionMipMapCPU::getMeshStructural(unsigned int structureType,MeshS
 		fprintf(stderr,"\nComputing Brick Line Mesh");
 		volumetype nLeaves = std::min(_nLeavesUsed,_nLeavesTotal);
 		for(volumetype i=0;i<nLeaves;i++){
-//			fprintf(stderr," [%i %i %i]",leafPosition[i].x,leafPosition[i].y,leafPosition[i].z);
+
 			if(_leafScale[i]){
 				mesh.addAlignedLineCube(_offset.x+_scale*_leafPos[i].x,
 						_offset.y+_scale*_leafPos[i].y,_offset.z+_scale*_leafPos[i].z,
@@ -3896,7 +3139,7 @@ void loopClosureWrapper
 {
 	fprintf(stderr,"\nLoop Closure Thread started");
 
-//	fprintf(stderr,"\nDeleting old Poses");
+
 	fusion->deleteOldLoopPoses();
 
 	fprintf(stderr,"\nAdding new Poses");
@@ -3945,39 +3188,39 @@ void FusionMipMapCPU::deleteOldLoopPoses()
 		//Getting the Images
 		_depthImageReferences.resize(p+1,_depthImageBuffer.end());
 		if(_depthImageReferences[p]==_depthImageBuffer.end()){
-//			fprintf(stderr,"\nLoading Depth Image from Hard Drive");
+
 			_depthImageBuffer.push_front(std::pair<cv::Mat,size_t>(cv::imread(getNameD(p),-1),p));
 			_depthImageBuffer.front().first.convertTo(_depthImageBuffer.front().first,CV_32FC1,1.0/5000.0);
 			_depthImageBuffer.front().first.setTo(IMAGEINFINITE,_depthImageBuffer.front().first == 0.0);
 			_depthImageReferences[p] = _depthImageBuffer.begin();
 			if(_depthImageBuffer.size()>_maxImageBufferSize){
-//				fprintf(stderr,"\nDeleting least used Depth Image from Memory");
+
 				_depthImageReferences[_depthImageBuffer.back().second] = _depthImageBuffer.end();
 				_depthImageBuffer.pop_back();
 			}
 		}
 		else{
-//			fprintf(stderr,"\nDepth Image %li is in CPU Memory",p);
+
 			_depthImageBuffer.push_front(*_depthImageReferences[p]);
 			_depthImageBuffer.erase(_depthImageReferences[p]);
 		}
 
 		_rgbImageReferences.resize(p+1,_rgbImageBuffer.end());
 		if(_rgbImageReferences[p]==_rgbImageBuffer.end()){
-//			fprintf(stderr,"\nLoading RGB Images from Hard Drive");
+
 			_rgbImageBuffer.push_front(std::pair<std::vector<cv::Mat>,size_t>(std::vector<cv::Mat>(3),p));
 			_rgbImageBuffer.front().first[0] = cv::imread(getNameR(p),-1);
 			_rgbImageBuffer.front().first[1] = cv::imread(getNameG(p),-1);
 			_rgbImageBuffer.front().first[2] = cv::imread(getNameB(p),-1);
 			_rgbImageReferences[p] = _rgbImageBuffer.begin();
 			if(_rgbImageBuffer.size()>_maxImageBufferSize){
-//				fprintf(stderr,"\nDeleting least used RGB Images from Memory");
+
 				_rgbImageReferences[_rgbImageBuffer.back().second] = _rgbImageBuffer.end();
 				_rgbImageBuffer.pop_back();
 			}
 		}
 		else{
-//			fprintf(stderr,"\nRGB Images are in CPU Memory");
+
 			_rgbImageBuffer.push_front(*_rgbImageReferences[p]);
 			_rgbImageBuffer.erase(_rgbImageReferences[p]);
 		}
@@ -4077,42 +3320,15 @@ void FusionMipMapCPU::saveZimages()
 	std::vector<volumetype> indices(_nLeavesUsed);
 	for(volumetype i=0;i<indices.size();i++) indices[i] = i;
 
-//	std::vector<volumetype> indices(_nLeavesUsed-_nLeavesBeforeLastFrame);
-//	for(volumetype i=0;i<indices.size();i++) indices[i] = i+_nLeavesBeforeLastFrame;
-
-//	std::vector<volumetype> indices(_leafNumberSurface,_leafNumberSurface+_nLeavesQueuedSurface);
-
-//	fprintf(stderr,"\nComputing Negatives");
-//	std::vector<volumetype> indices;
-//	for(volumetype i=0;i<_nLeavesUsed;i++){
-//		bool queued = false;
-//		for(volumetype j=0;j<_nLeavesQueuedSurface;j++){
-//			if(_leafNumberSurface[j]==i){
-//				queued = true;
-//				break;
-//			}
-//		}
-//		if(!queued) indices.push_back(i);
-//	}
-//	fprintf(stderr,"\nNegatives Computed");
-
 	std::string prefix = "debug";
 	sidetype maxScale = _n/2/_brickLength;
 	sidetype minScale = 256;
-//	size_t maxMemForDistance = 268435456;
+
 	size_t maxMemForDistance = 1073741824;
 
 	fprintf(stderr,"\nFilling Leaf Maps ordered by Z-Offset...");
 	std::vector<std::map<sidetype,std::vector<volumetype> > > queues;
 
-//	for(sidetype s=1;s<=maxScale;s*=2){
-//		fprintf(stderr,"\nScale %i:",s);
-//		queues.push_back(std::map<sidetype,std::vector<volumetype> >());
-//		for(size_t i=0;i<indices.size();i++){
-//			if(_leafScale[indices[i]]==s)
-//			queues.back()[_leafPos[indices[i]].z].push_back(indices[i]);
-//		}
-//	}
 
 	volumetype daLeaf = 510;
 	for(sidetype s=1;s<=maxScale;s*=2){
@@ -4174,7 +3390,6 @@ void FusionMipMapCPU::saveZimages()
 				cv::imwrite(buffer,initimage);
 				imageWritten.insert(z);
 			}
-//			return;
 		}
 
 		std::set<sidetype> checkSet;
@@ -4221,7 +3436,7 @@ void FusionMipMapCPU::saveZimages()
 							cv::Mat colorslice[scale];
 
 							for(sidetype largMemOff=0;largMemOff<scale;largMemOff+=imagesInMemory){
-//								for(sidetype z2=0;z2<scale;z2++){
+
 								fprintf(stderr,"\nReading Images from %i to %li",
 										z+z1*scale+largMemOff,z+z1*scale+largMemOff+imagesInMemory);
 								for(sidetype z2=largMemOff;z2<largMemOff+imagesInMemory;z2++){
@@ -4231,10 +3446,6 @@ void FusionMipMapCPU::saveZimages()
 									slice[z2] = cv::imread(disbuffer,-1);
 									sprintf(colbuffer,"%s/col%.5i.png",prefix.c_str(),zcomb);
 									colorslice[z2] = cv::imread(colbuffer,-1);
-	//								fprintf(stderr,"\n%s %s",disbuffer,colbuffer);
-	//								fprintf(stderr," (%i %i|%i)(%i %i|%i)",
-	//										slice[z2].cols,slice[z2].rows,slice[z2].channels(),
-	//										colorslice[z2].cols,colorslice[z2].rows,colorslice[z2].channels());
 								}
 								fprintf(stderr,"\nImages read.");
 								for(size_t k=0;k<leaves.size();k++){
@@ -4265,15 +3476,13 @@ void FusionMipMapCPU::saveZimages()
 												}
 												colorsource.r = col.x/COLOR_MULTIPLICATOR; colorsource.g = col.y/COLOR_MULTIPLICATOR; colorsource.b = col.z/COLOR_MULTIPLICATOR;
 											}
-//											for(sidetype z2=0;z2<scale;z2++){
+
 											for(sidetype z2=largMemOff;z2<largMemOff+imagesInMemory;z2++){
 												for(sidetype y2=0;y2<scale;y2++){
 													for(sidetype x2=0;x2<scale;x2++){
-	//													((bgra*)slice[z3].data)[(o.y+y1*scale+y3)*_n+_n-1-o.x-x1*scale-x3] = source;
 														sidetype y = o.y+y1*scale+y2;
 														sidetype x = o.x+x1*scale+x2;
 														long long j = (long long)y*(long long)_n+(long long)_n-1-(long long)x;
-	//													fprintf(stderr," (%i %i %i):(%i %i):%lli",x3,y3,z3,x,y,j);
 														if(((bgra*)slice[z2].data)[j].a==0 || weight!=0){
 															((bgra*)slice[z2].data)[j] = source;
 															((bgra*)colorslice[z2].data)[j] = colorsource;
@@ -4285,7 +3494,6 @@ void FusionMipMapCPU::saveZimages()
 									}
 								}
 								fprintf(stderr,"\nWriting back...");
-//								for(sidetype z2=0;z2<scale;z2++){
 								for(sidetype z2=largMemOff;z2<largMemOff+imagesInMemory;z2++){
 									sidetype zcomb = z+z1*scale+z2;
 									checkSet.insert(zcomb);
@@ -4385,28 +3593,7 @@ void FusionMipMapCPU::saveZimagesFull()
 	std::vector<volumetype> indices(_nLeavesUsed);
 	for(volumetype i=0;i<indices.size();i++) indices[i] = i;
 
-//	std::vector<volumetype> indices(_nLeavesUsed-_nLeavesBeforeLastFrame);
-//	for(volumetype i=0;i<indices.size();i++) indices[i] = i+_nLeavesBeforeLastFrame;
-
-//	std::vector<volumetype> indices(_leafNumberSurface,_leafNumberSurface+_nLeavesQueuedSurface);
-
-//	fprintf(stderr,"\nComputing Negatives");
-//	std::vector<volumetype> indices;
-//	for(volumetype i=0;i<_nLeavesUsed;i++){
-//		bool queued = false;
-//		for(volumetype j=0;j<_nLeavesQueuedSurface;j++){
-//			if(_leafNumberSurface[j]==i){
-//				queued = true;
-//				break;
-//			}
-//		}
-//		if(!queued) indices.push_back(i);
-//	}
-//	fprintf(stderr,"\nNegatives Computed");
-
-
 	std::string prefix = "debug";
-//	sidetype maxScale = 2;
 	sidetype maxScale = _n/2/_brickLength;
 
 	fprintf(stderr,"\nFilling Leaf Maps ordered by Z-Offset...");
@@ -4415,7 +3602,6 @@ void FusionMipMapCPU::saveZimagesFull()
 		fprintf(stderr,"\nScale %i:",s);
 		queues.push_back(std::map<sidetype,std::vector<volumetype> >());
 		for(size_t i=0;i<indices.size();i++){
-//			fprintf(stderr," %li->%i : %i",i,indices[i],_leafScale[indices[i]]);
 			if(_leafScale[indices[i]]==s)
 			queues.back()[_leafPos[indices[i]].z].push_back(indices[i]);
 		}
@@ -4474,7 +3660,7 @@ void FusionMipMapCPU::saveZimagesFull()
 					}
 					for(size_t l=0;l<leaves.size();l++){
 						const sidetype3 &o = _leafPos[leaves[l]];
-//						fprintf(stderr," [%i %i %i]",o.x,o.y,o.z);
+
 						volumetype start = leaves[l]*_brickSize;
 						for(sidetype z1=0;z1<_brickLength;z1++){
 							for(sidetype y1=0;y1<_brickLength;y1++){
@@ -4484,7 +3670,7 @@ void FusionMipMapCPU::saveZimagesFull()
 									float dist = _distance[index];
 									char source = -127;
 									if(weight>0) source = (char)(dist/distMax*125.0f);
-//									fprintf(stderr,"W");
+
 									for(sidetype z2=0;z2<scale;z2++){
 										for(sidetype y2=0;y2<scale;y2++){
 											for(sidetype x2=0;x2<scale;x2++){
@@ -4492,13 +3678,13 @@ void FusionMipMapCPU::saveZimagesFull()
 												sidetype y = o.y+y1*scale+y2;
 												sidetype x = o.x+x1*scale+x2;
 												long long j = ((long long)z*(long long)_n+(long long)y)*(long long)_n+(long long)_n-1-(long long)x;
-//												fprintf(stderr," (%i %i %i):%lli",z,y,x,j);
+
 												memory[j] = source;
-//												fprintf(stderr,".");
+
 											}
 										}
 									}
-//									fprintf(stderr,"!");
+
 								}
 							}
 						}
@@ -4581,11 +3767,4 @@ void FusionMipMapCPU::saveZimagesFull()
 	}
 
 }
-
-
-
-
-
-
-
 

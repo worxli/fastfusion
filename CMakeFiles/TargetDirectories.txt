@@ -1,0 +1,6 @@
+/home/worxli/fastfusion/src/auxiliary/CMakeFiles/auxiliary.dir
+/home/worxli/fastfusion/src/camerautils/CMakeFiles/camerautils.dir
+/home/worxli/fastfusion/src/fusion/CMakeFiles/geometryfusion_aos.dir
+/home/worxli/fastfusion/src/fusion/CMakeFiles/geometryfusion_mipmap_cpu.dir
+/home/worxli/fastfusion/src/CMakeFiles/onlinefusion.dir
+/home/worxli/fastfusion/src/CMakeFiles/onlinefusionBA.dir
