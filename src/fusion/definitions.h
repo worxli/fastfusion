@@ -199,7 +199,7 @@ typedef struct int3_ { int x; int y; int z;} int3;
 //#define SWITCH_MESHCELLS_SPLIT
 #endif
 
-#define MAXCAMDISTANCE 10.0
+#define MAXCAMDISTANCE 10.0 //10.0
 #define MIN_WEIGHT_FOR_SURFACE 0.0
 #define ADD_WEIGHTS_TRANSITION_140424
 //#define MAXCAMDISTANCE 6.0
@@ -306,6 +306,8 @@ typedef struct int3_ { int x; int y; int z;} int3;
 #endif
 #endif
 #endif
+
+// #define DEPTHSCALE 1
 
 //#ifndef DEBUG_OUTPUT_DEFINED
 //#define DEBUG_OUTPUT_DEFINED

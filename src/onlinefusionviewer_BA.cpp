@@ -48,52 +48,6 @@
 
  using namespace std;
 
-//CameraInfo kinectPoseFromSophus(Sophus::SE3 pos){
-//	CameraInfo result;
-//	cv::Mat intrinsic = cv::Mat::eye(3,3,cv::DataType<double>::type);
-//	//Kinect Intrinsic Parameters
-//	//Kinect
-//	intrinsic.at<double>(0,0) = intrinsic.at<double>(1,1) = 525.0;
-//	intrinsic.at<double>(0,2) = 319.5;
-//	intrinsic.at<double>(1,2) = 239.5;
-//	//DLR
-////	intrinsic.at<double>(0,0) = intrinsic.at<double>(1,1) = 551.85425;
-////	intrinsic.at<double>(0,2) = 376.0;
-////	intrinsic.at<double>(1,2) = 240.0;
-//
-//	result.setIntrinsic(intrinsic);
-//	Eigen::Matrix3d rotation = pos.rotation_matrix();
-//	cv::Mat rotation2 = cv::Mat::eye(3,3,cv::DataType<double>::type);
-//	for(int i=0;i<3;i++) for(int j=0;j<3;j++) rotation2.at<double>(i,j) = rotation(i,j);
-//	result.setRotation(rotation2);
-//	Eigen::Vector3d translation = pos.translation();
-//	cv::Mat translation2 = cv::Mat::zeros(3,1,cv::DataType<double>::type);
-//	for(int i=0;i<3;i++) translation2.at<double>(i,0) = translation(i);
-//	result.setTranslation(translation2);
-//	return result;
-//}
-
-//CameraInfo kinectPoseFromSophus(Sophus::SE3 pos,float fx, float fy, float cx, float cy){
-//	CameraInfo result;
-//	cv::Mat intrinsic = cv::Mat::eye(3,3,cv::DataType<double>::type);
-//	//Kinect Intrinsic Parameters
-//	intrinsic.at<double>(0,0) = fx;
-//	intrinsic.at<double>(1,1) = fy;
-//	intrinsic.at<double>(0,2) = cx;
-//	intrinsic.at<double>(1,2) = cy;
-//
-//	result.setIntrinsic(intrinsic);
-//	Eigen::Matrix3d rotation = pos.rotation_matrix();
-//	cv::Mat rotation2 = cv::Mat::eye(3,3,cv::DataType<double>::type);
-//	for(int i=0;i<3;i++) for(int j=0;j<3;j++) rotation2.at<double>(i,j) = rotation(i,j);
-//	result.setRotation(rotation2);
-//	Eigen::Vector3d translation = pos.translation();
-//	cv::Mat translation2 = cv::Mat::zeros(3,1,cv::DataType<double>::type);
-//	for(int i=0;i<3;i++) translation2.at<double>(i,0) = translation(i);
-//	result.setTranslation(translation2);
-//	return result;
-//}
-
 CameraInfo kinectPoseFromEigen(std::pair<Eigen::Matrix3d,Eigen::Vector3d> pos,float fx, float fy, float cx, float cy){
 	CameraInfo result;
 	cv::Mat intrinsic = cv::Mat::eye(3,3,cv::DataType<double>::type);
@@ -347,111 +301,16 @@ int main(int argc, char *argv[])
 			poses_from_assfile.clear();
 		}
 	}
-	else{
-		fprintf(stderr,"\nReading in multiple Trajectories");
-		std::vector<std::string> trajectoryNames;
-		std::fstream metafile;
-		if(!associationfilenames.size()){
-			fprintf(stderr,"\nERROR: No association File!");
-			return 1;
-		}
-		metafile.open(associationfilenames[0].c_str(),std::ios::in);
-		if(!metafile.is_open()){
-			fprintf(stderr,"\nERROR: Could not open Trajectory Metafile \"%s\"",associationfilenames[0].c_str());
-			return 1;
-		}
-		while(!metafile.eof()){
-			std::string filename;
-			metafile >> filename;
-			if(filename!=""){
-//				fprintf(stderr,"\n%s",filename.c_str());
-				trajectoryNames.push_back(prefices[0] + filename);
-			}
-		}
-		metafile.close();
-		fprintf(stderr,"\nRead in %li Trajectories from Trajectory Metafile",trajectoryNames.size());
-		for(size_t i=0;i<trajectoryNames.size();i++){
-//			posesSophus.clear();
-			poses_from_assfile.clear();
-			poses.push_back(std::vector<CameraInfo>());
-			depthNames.push_back(std::vector<std::string>());
-			rgbNames.push_back(std::vector<std::string>());
-			std::vector<CameraInfo> &trajectory = poses.back();
-			std::vector<std::string> &depthNamesLast = depthNames.back();
-			std::vector<std::string> &rgbNamesLast = rgbNames.back();
-			std::string prefix = prefices[0];
-			std::fstream associationfile; float junkstamp;
-			std::string depthname; std::string rgbname;
-			float q1, q2, q3, q4, translation1, translation2, translation3;
-			associationfile.open(trajectoryNames[i].c_str(),std::ios::in);
-			if(!associationfile.is_open()){
-				fprintf(stderr,"\nERROR: Could not open File %s",trajectoryNames[i].c_str());
-			}else{
-//				fprintf(stderr,"\nReading Association File \"%s\"",trajectoryNames[i].c_str());
-				while(!associationfile.eof()){
-					std::string temp("");
-					getline(associationfile,temp);
-					std::stringstream stream(temp);
-					stream >> junkstamp;
-					stream >> translation1; stream >> translation2; stream >> translation3;
-					stream >> q1; stream >> q2; stream >> q3; stream >> q4;
-					stream >> junkstamp;
-					stream >> depthname;
-					if(temp!=""){
-//						posesSophus.push_back(Sophus::SE3(Eigen::Quaterniond(q4,q1,q2,q3),Eigen::Vector3d(translation1,translation2,translation3)));
-						poses_from_assfile.push_back(std::pair<Eigen::Matrix3d,Eigen::Vector3d>(Eigen::Quaterniond(q4,q1,q2,q3).toRotationMatrix(),Eigen::Vector3d(translation1,translation2,translation3)));
-						depthNamesLast.push_back(depthname);
-						if(useColor){
-							stream >> junkstamp; stream >> rgbname; rgbNamesLast.push_back(rgbname);
-						}
-					}
-				}
-//				fprintf(stderr,"\nRead %i Poses from Trajectory File Nr %li : %s .",
-//						(int)depthNames[i].size(),i,trajectoryNames[i].c_str());
-			}
-
-			for(unsigned int i=0;i<poses_from_assfile.size();i++){
-//				trajectory.push_back(kinectPoseFromSophus(posesSophus[i]));
-//				trajectory.push_back(kinectPoseFromSophus(posesSophus[i],fx,fy,cx,cy));
-				trajectory.push_back(kinectPoseFromEigen(poses_from_assfile[i],fx,fy,cx,cy));
-				trajectory.back().setExtrinsic(startpos.getExtrinsic()*trajectory.back().getExtrinsic());
-				depthNamesLast[i] = prefix + depthNamesLast[i];
-				if(useColor) rgbNamesLast[i] = prefix + rgbNamesLast[i];
-			}
-		}
-	}
 
 	if(!useLoopClosures){
 		fprintf(stderr,"\nRead %i Poses und Depth Images and %i RGB Images from %i Association Files",
 				(int)depthNames.size(), (int)rgbNames.size(), (int)associationfilenames.size());
-	}
-	else{
-		fprintf(stderr,"\nRead %li Trajectories",depthNames.size());
-		//Check
-		for(size_t i=1;i<poses.size();i++){
-			if(poses[i].size()<poses[i-1].size()){
-				fprintf(stderr,"\nERROR: Trajectory %li is shorter than No %li",i,i-1);
-			}
-			else{
-				for(size_t j=0;j<poses[i-1].size();j++){
-					if(depthNames[i][j]!=depthNames[i-1][j] || rgbNames[i][j]!=rgbNames[i-1][j]){
-						fprintf(stderr,"\nERROR: Images %li at [%li / %li] inconsistent: [%s %s] vs. [%s %s]",
-								j,i,i-1,depthNames[i][j].c_str(),depthNames[i-1][j].c_str(),
-								rgbNames[i][j].c_str(),rgbNames[i-1][j].c_str());
-					}
-				}
-			}
-		}
 	}
 
 
 	if(startimage >= depthNames.front().size()) startimage = depthNames.front().size()-1;
 	if(endimage >= depthNames.back().size()) endimage = depthNames.back().size()-1;
 
-
-
-//	fprintf(stderr,"\nCreating Mipmapping GPU Octree");
-//	Fusion_AoS *fusion = new FusionMipMap(0,0,0,DEFAULT_SCALE,DISTANCETHRESHOLD,0,volumeColor);
 
 	fprintf(stderr,"\nCreating Mipmapping CPU Octree");
 	FusionMipMapCPU *fusion = new FusionMipMapCPU(0,0,0,scale,threshold,0,volumeColor);
@@ -463,7 +322,6 @@ int main(int argc, char *argv[])
 	fprintf(stderr,"\nCreating Viewer");
 	QApplication application(argc,argv);
 
-//	OnlineFusionViewerManipulated viewer(false);
 	OnlineFusionViewerManipulated *viewerpointer = new OnlineFusionViewerManipulated(false);
 	OnlineFusionViewerManipulated &viewer = *viewerpointer;
 
@@ -487,10 +345,6 @@ int main(int argc, char *argv[])
 
 	fprintf(stderr,"\nDeleting Viewer");
 	delete viewerpointer;
-
-
-
-
 
 	fprintf(stderr,"\nProgram %s exiting.\n\n",argv[0]);
 	fprintf(stderr,"\nPress Enter exit the Program");

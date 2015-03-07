@@ -29,7 +29,7 @@ OnlineFusionViewerManipulated::OnlineFusionViewerManipulated(bool createMeshList
 _currentMeshForSave(NULL),
 _currentMeshInterleaved(NULL),
 	_fusion(NULL),
-	_imageDepthScale(5000.0), _maxCamDistance(MAXCAMDISTANCE),
+	_imageDepthScale(5000.0), _maxCamDistance(MAXCAMDISTANCE), //5000
 	_currentFrame(-1),
 	_currentTrajectory(-1),
 //	_firstFrame(-1),
@@ -350,7 +350,7 @@ void OnlineFusionViewerManipulated::drawCameraFrustum
 		std::string imageName
 )
 {
-//	fprintf(stderr,"\nDrawing Camera Frustum");
+	// fprintf(stderr,"\nDrawing Camera Frustum");
   cv::Mat intr = pose.getIntrinsic();
   cv::Mat ext = pose.getExtrinsic().clone();
 
@@ -418,8 +418,10 @@ void OnlineFusionViewerManipulated::drawCameraFrustum
 
 
 	if(imageName != ""){
-		if(_verbose) fprintf(stderr,"\nDrawing Points from %s",imageName.c_str());
+		if(true) fprintf(stderr,"\nDrawing Points from %s",imageName.c_str());
 		cv::Mat depthImage = cv::imread(imageName,-1);depthImage.convertTo(depthImage,CV_32FC1,1/DEPTHSCALE);
+		std::cout << "depthImage" << std::endl;
+		std::cout << depthImage << std::endl;
 		if(depthImage.empty()) fprintf(stderr,"\nERROR: DepthIMage empty");
 		glPointSize(2.0);
 	  glColor3f(1,0,0);
@@ -568,9 +570,10 @@ void OnlineFusionViewerManipulated::draw()
   	drawCameraFrustum(_poses[_currentTrajectory][_currentFrame],
   			_showDepthImage ? _depthNames[_currentTrajectory][_currentFrame] : "");
   }
-  if(_showGridBoundingbox && _boundingBox.size()==6)
+  if(_showGridBoundingbox && _boundingBox.size()==6) {
   	drawGridFrame(_boundingBox[0]-_cx,_boundingBox[1]-_cy,_boundingBox[2]-_cz,
   			          _boundingBox[3]-_cx,_boundingBox[4]-_cy,_boundingBox[5]-_cz);
+  }
 
   // Restore the original (world) coordinate system
   glPopMatrix();
@@ -764,7 +767,7 @@ void imageReadingAndPreprocessingWrapper
 	for(unsigned int i=startFrame;*readingActive && i<endFrame;i++){
 		cv::Mat *depthPointer = new cv::Mat();
 		*depthPointer = cv::imread(depthNames[i],-1);
-		depthPointer->convertTo(*depthPointer,CV_32FC1,1.0/5000.0);
+		depthPointer->convertTo(*depthPointer,CV_32FC1,1); // 1 / 5000.0
 		depthPointer->setTo(IMAGEINFINITE,*depthPointer == 0.0);
 		depthPointer->setTo(IMAGEINFINITE,*depthPointer >= maxCamDistance);
 

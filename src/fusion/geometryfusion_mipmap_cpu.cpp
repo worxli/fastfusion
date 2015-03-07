@@ -1250,6 +1250,8 @@ void computeBoundingboxIntCPU
 int FusionMipMapCPU::addMap(cv::Mat &depth, CameraInfo caminfo,
 			std::vector<cv::Mat> rgb)
 {
+
+	std::cout << "addmap 1" << std::endl;
 	//Parameter Helpers
 	cv::Mat rot = caminfo.getRotation();
 	cv::Mat trans = caminfo.getTranslation();
@@ -1533,11 +1535,22 @@ int FusionMipMapCPU::addMap(cv::Mat &depth, CameraInfo caminfo,
 int FusionMipMapCPU::addMap(const cv::Mat &depth, CameraInfo caminfo, const cv::Mat &rgb,
 		float scaling, float maxcamdistance)
 {
+
+	std::cout << "addmap 2" << std::endl;
 	fprintf(stderr,"\nI[%i]",_framesAdded);
+	std::cout << scaling << std::endl;
+	// std::cout << depth << std::endl;
+	std::cout << _scale << std::endl;
+	// _scale = 0.00;
+
 	//Parameter Helpers
 	cv::Mat rot = caminfo.getRotation();
 	cv::Mat trans = caminfo.getTranslation();
 	cv::Mat intr = caminfo.getIntrinsic();
+
+	// std::cout << "rotation " << rot << std::endl;
+	// std::cout << "trans " << trans << std::endl;
+	// std::cout << "intr" << intr << std::endl;
 
 	_nLeavesBeforeLastFrame = _nLeavesUsed;
 	volumetype branchesBeforeLastFrame = _nBranchesUsed;
@@ -1637,7 +1650,6 @@ int FusionMipMapCPU::addMap(const cv::Mat &depth, CameraInfo caminfo, const cv::
 	intr2.at<double>(0,0), intr2.at<double>(1,1),
 	intr2.at<double>(0,2), intr2.at<double>(1,2));
 
-//	bool colorMap2 = _useColor && (rgb.cols==depth.cols&&rgb.rows==depth.rows);
 
 	float m11 = pInv.r11; float m12 = pInv.r12;
 	float m13 = pInv.r13; float m14 = pInv.t1 ;
@@ -2048,7 +2060,6 @@ int updateMeshCellStructureBranches_recursive
 		const sidetype *_leafScale
 )
 {
-//	fprintf(stderr," start[%i]",child);
 	volumetype childoffset = child&7;
 	volumetype branch = child-childoffset;
 #ifdef BRANCHNEIGHBORHOOD_REFERECE
@@ -2117,11 +2128,10 @@ int updateMeshCellStructureBranches_recursive_compact
 	if(subtree==BRANCHINIT) fprintf(stderr,"\nERROR: Empty Subtree at MeshCell"
 			" Structuree Creation!");
 	uchar childBranchSize = CHILDBRANCHSIZEFUNCTION;
-//	fprintf(stderr,"\nNumber of MeshCells before compact branch subdivision: %li",_meshCells.size());
+
 	createMeshCellStructuresForBranch_list_vector_polymorph_compact(
 			_meshCells,_meshCellIndicesBranch,_meshCellIndicesLeaf,_boundary,
 			child,subtree,pl,childBranchSize,_n);
-//	fprintf(stderr,"\nNumber of MeshCells after compact branch subdivision: %li",_meshCells.size());
 
 
 	if(_tree[child]<BRANCHINIT){
@@ -2185,19 +2195,7 @@ int updateMeshCellStructureBranches_recursive_splitcompactdebug
 				" %li vs %li",_meshCellIndicesBranch.size(),_meshCellIndicesBranchCompact.size());
 		char c; std::cin >> c;
 	}
-//	bool equal_neighborhoods = true;
-//	for(size_t j=0;j<_meshCellIndicesBranch.size();j++){
-//		MeshCellNeighborhood compare = _meshCellIndicesBranchCompact[j];
-//		bool equal_neighborhood = compare == _meshCellIndicesBranch[j];
-//		equal_neighborhoods &= equal_neighborhood;
-//		if(!equal_neighborhood){
-//			fprintf(stderr,"\nERROR: Split Neighborhood %li is different from Compact",j);
-//		}
-//	}
-//	if(equal_neighborhoods) {
-//		fprintf(stderr,"\nDEBUG: Compact neighborhoods are equal to split "
-//				"ones after MeshCell Structure Creation %i->%i",child,subtree);
-//	}
+
 
 	if(_tree[child]<BRANCHINIT){
 		pl = _tree[child];
@@ -2284,14 +2282,7 @@ void FusionMipMapCPU::updateMeshCellStructure()
 {
 	eprintf("\nUpdating MeshCell Structure...");
 
-//	fprintf(stderr,"\nInterior Indices Regular:\n");
-//	for(size_t i=0;i<_meshCellIndicesBranch.size();i++){
-//		fprintf(stderr," [%li %li]",i,_meshCellIndicesBranch[i].indexInterior);
-//	}
-//	fprintf(stderr,"\nInterior Indices Compact:\n");
-//	for(size_t i=0;i<_meshCellIndicesBranchCompact.size();i++){
-//		fprintf(stderr," [%li %li]",i,_meshCellIndicesBranchCompact[i].indexInterior);
-//	}
+
 #if defined MESHCELLINDICES_SPLIT && defined MESHCELLINDICES_COMPACT
 	if(_meshCellIndicesBranch.size()!=_meshCellIndicesBranchCompact.size()){
 		fprintf(stderr,"\nERROR: Branch Indices Sizes do not match: %li vs %li",
@@ -2431,8 +2422,6 @@ void FusionMipMapCPU::pushMeshCellQueue()
 
 	for(std::deque<volumetype>::iterator it=_leafQueueForMeshing.begin();it!=_leafQueueForMeshing.end();it++){
 		volumetype leaf = *it;
-//	for(volumetype i=0;i<_nLeavesQueuedSurface;i++){
-//		volumetype leaf = _leafNumberSurface[i];
 
 		for(LeafNeighborhood::iterator j=_meshCellIndicesLeaf[leaf].begin();j!=_meshCellIndicesLeaf[leaf].end();j++){
 			if((*j)>=_meshCells.size()) fprintf(stderr,"\nERROR: Leaf Queue Index %li >= _meshCells.size() of %li",
@@ -2600,7 +2589,7 @@ bool FusionMipMapCPU::updateMeshes()
 
 	if(_meshingDone==0){
 		double time5 = (double)cv::getTickCount();
-		fprintf(stderr, "U[Q:%li]",_meshCellQueueNext.size());
+		fprintf(stderr, "U[Q:%li]F",_meshCellQueueNext.size());
 		_meshingDone = 1;
 		_treeinfo  = treeinfo(NULL,_brickLength,_brickSize,
 				std::min((double)_framesAdded,MIN_WEIGHT_FOR_SURFACE),
